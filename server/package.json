@@ -14,9 +14,11 @@
   "dependencies": {
     "@apollo/server": "^4.11.2",
     "dotenv": "^16.4.5",
-    "graphql": "^16.9.0"
+    "graphql": "^16.9.0",
+    "graphql-tag": "^2.12.6"
   },
   "devDependencies": {
+    "@graphql-tools/schema": "^10.0.10",
     "@types/node": "^22.10.1",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
