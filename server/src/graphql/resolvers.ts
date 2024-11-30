@@ -1,22 +1,16 @@
+import { userResolvers } from "../resolvers/userResolvers";
+import { preferencesResolvers } from "../resolvers/preferencesResolvers";
+import { conversationResolvers } from "../resolvers/conversationResolvers";
+
 export const resolvers = {
   Query: {
-    hello: () => "Hello, world!",
-    users: async () => {
-      // Mocked data, replace with DB calls
-      return [
-        { id: "1", name: "John Doe", email: "john@example.com" },
-        { id: "2", name: "Jane Smith", email: "jane@example.com" },
-      ];
-    },
+    ...userResolvers.Query,
+    ...preferencesResolvers.Query,
+    ...conversationResolvers.Query,
   },
   Mutation: {
-    createUser: async (_: any, args: { name: string; email: string }) => {
-      const newUser = {
-        id: Math.random().toString(),
-        ...args,
-      };
-      // Replace with DB call to create user
-      return newUser;
-    },
+    ...userResolvers.Mutation,
+    ...preferencesResolvers.Mutation,
+    ...conversationResolvers.Mutation,
   },
 };
