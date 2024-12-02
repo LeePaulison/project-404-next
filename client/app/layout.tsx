@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang='en' className='dark'>
       <body
         className={clsx(
-          "bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text",
+          "bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text h-full",
           inter.className
         )}
       >
@@ -57,7 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </header>
 
             {/* Main Content Area */}
-            <section className='flex-1 p-6'>{children}</section>
+            <section className='flex-1 p-6 overflow-auto'>{children}</section>
           </main>
         </div>
       </body>

@@ -10,7 +10,7 @@ export default function ProfileDropdown() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className='p-2 bg-gray-300 dark:bg-gray-700 rounded hover:bg-gray-400 dark:hover:bg-gray-600'>
+        <button className='p-2 rounded hover:ring-1 hover:ring-light-primary dark:ring-dark-primary hover:underline'>
           Profile
         </button>
       </DropdownMenu.Trigger>

@@ -19,8 +19,6 @@ export interface IUser extends Document {
   archived: boolean;
   archivedAt: Date | null;
   mergedAt?: Date;
-  preferences?: mongoose.Types.ObjectId;
-  conversations: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -44,8 +42,6 @@ const userSchema = new Schema<IUser>({
   archived: { type: Boolean, default: false },
   archivedAt: { type: Date, default: null },
   mergedAt: { type: Date },
-  preferences: { type: Schema.Types.ObjectId, ref: "Preferences" },
-  conversations: [{ type: Schema.Types.ObjectId, ref: "Conversation" }], // Add this
 });
 
 export const User = mongoose.model<IUser>("User", userSchema);

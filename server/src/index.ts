@@ -9,7 +9,7 @@ import { resolvers } from "./graphql/resolvers";
 
 const port = process.env.PORT || 4000;
 
-export const server = new ApolloServer({ typeDefs, resolvers });
+export const server = new ApolloServer<{ ip: string | null }>({ typeDefs, resolvers });
 
 const startServer = async () => {
   await connectDB();

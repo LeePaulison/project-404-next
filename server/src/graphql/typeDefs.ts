@@ -34,8 +34,6 @@ export const typeDefs = gql`
     email: String
     displayName: String
     photoURL: String
-    preferences: Preferences
-    conversations: [Conversation!]
     createdAt: String
     updatedAt: String
     archived: Boolean

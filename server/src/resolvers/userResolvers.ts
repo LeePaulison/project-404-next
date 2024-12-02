@@ -1,24 +1,119 @@
 import { User } from "../models/User";
 import { Preferences } from "../models/Preferences";
+import { Conversation } from "../models/Conversation";
 import { ObjectId } from "mongodb";
 
 export const userResolvers = {
   Query: {
     getUser: async (_: any, { userId }: { userId: string }) => {
-      return await User.findById(userId).populate("preferences").populate("conversations").populate("conversations");
+      return await User.findById(userId).populate("preferences").populate("conversations");
     },
   },
   Mutation: {
-    createUser: async (_: any, { firebaseUID, googleUID, email }: any) => {
-      const newUser = new User({
-        firebaseUIDs: [{ uid: firebaseUID }],
-        googleUID,
-        email,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      await newUser.save();
-      return newUser;
+    createUser: async (
+      _: any,
+      { firebaseUID, googleUID, email }: { firebaseUID: string; googleUID?: string; email?: string },
+      { ip }: { ip: string }
+    ) => {
+      console.log("Creating user with firebaseUID:", firebaseUID, "googleUID:", googleUID, "email:", email);
+      console.log("IP Address:", ip);
+      try {
+        const userIP = ip || "";
+        const normalizedEmail = email ? email.toLowerCase() : "";
+        const currentTime = Date.now();
+
+        // 1. Check if a user already exists
+        let existingUser = await User.findOne({
+          $or: [
+            { "firebaseUIDs.uid": firebaseUID },
+            { googleUID },
+            { email: normalizedEmail },
+            { lastKnownIP: userIP },
+          ],
+        });
+
+        if (existingUser) {
+          // Update Google UID and email
+          if (googleUID && !existingUser.googleUID) {
+            existingUser.googleUID = googleUID;
+            existingUser.email = normalizedEmail;
+            existingUser.lastKnownIP = userIP;
+            existingUser.updatedAt = new Date(currentTime);
+          }
+
+          // Archive anonymous UID
+          const anonymousUID = existingUser.firebaseUIDs.find((uid) => uid.uid === firebaseUID);
+          if (anonymousUID && !anonymousUID.archived) {
+            anonymousUID.archived = true;
+            anonymousUID.archivedAt = new Date(currentTime);
+          }
+
+          // Merge Preferences
+          let preferences = await Preferences.findOne({ userId: existingUser._id });
+          if (!preferences) {
+            preferences = new Preferences({ userId: existingUser._id });
+            await preferences.save();
+          }
+
+          await existingUser.save();
+          return existingUser;
+        }
+
+        // 2. Set up new user data structure
+        let newUserData: any = {
+          createdAt: currentTime,
+          updatedAt: currentTime,
+          lastKnownIP: userIP,
+        };
+
+        // Add Google data if available
+        if (googleUID && email) {
+          newUserData.googleUID = googleUID;
+          newUserData.email = normalizedEmail;
+        }
+
+        // Add anonymous UID
+        if (firebaseUID) {
+          newUserData.firebaseUIDs = [
+            {
+              uid: firebaseUID,
+              createdAt: currentTime,
+              updatedAt: currentTime,
+              archived: false,
+              archivedAt: null,
+            },
+          ];
+        }
+
+        // 3. Create the new user
+        const newUser = await User.create(newUserData);
+
+        // 4. Create default preferences
+        const defaultPreferences = new Preferences({ userId: newUser._id });
+        await defaultPreferences.save();
+
+        // 5. Create a starter conversation for the new user
+        const starterConversation = new Conversation({
+          userId: newUser._id,
+          conversationTitle: "Welcome to Project 404!",
+          messages: [
+            {
+              role: "system",
+              content: "This is your first conversation. Start exploring!",
+              timestamp: currentTime,
+            },
+          ],
+          createdAt: currentTime,
+          updatedAt: currentTime,
+        });
+
+        await starterConversation.save();
+
+        return newUser;
+      } catch (error) {
+        console.error("Error creating user:", error);
+        throw new Error("Internal server error");
+      }
     },
     updateUser: async (_: any, { userId, input }: any) => {
       return await User.findByIdAndUpdate(userId, input, { new: true });
